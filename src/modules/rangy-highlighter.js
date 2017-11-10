@@ -253,6 +253,40 @@ rangy.createModule("Highlighter", ["ClassApplier"], function(api, module) {
         toString: function() {
             return "[Highlight(ID: " + this.id + ", class: " + this.classApplier.className + ", character range: " +
                 this.characterRange.start + " - " + this.characterRange.end + ")]";
+        },
+        serialize: function (highlighter, options) {
+            var convertType, serializationConverter;
+            var serializedType = options.type
+            convertType = serializedType !== highlighter.converter.type;
+
+            if (convertType) {
+                serializationConverter = getConverter(serializedType);
+            }
+
+            var characterRange = this.characterRange;
+            var containerElement;
+
+            // Convert to the current Highlighter's type, if different from the serialization type
+            if (convertType) {
+                containerElement = this.getContainerElement();
+                characterRange = serializationConverter.rangeToCharacterRange(
+                    highlighter.converter.characterRangeToRange(highlighter.doc, characterRange, containerElement),
+                    containerElement
+                );
+            }
+
+            var parts = [
+                characterRange.start,
+                characterRange.end,
+                this.id,
+                this.classApplier.className,
+                this.containerElementId
+            ];
+
+            if (options.serializeHighlightText) {
+                parts.push(this.getText());
+            }
+            return parts.join('$')
         }
     };
 
@@ -502,7 +536,7 @@ rangy.createModule("Highlighter", ["ClassApplier"], function(api, module) {
         serialize: function(options) {
             var highlighter = this;
             var highlights = highlighter.highlights;
-            var serializedType, serializedHighlights, convertType, serializationConverter;
+            var serializedType, serializedHighlights
 
             highlights.sort(compareHighlights);
             options = createOptions(options, {
@@ -511,39 +545,11 @@ rangy.createModule("Highlighter", ["ClassApplier"], function(api, module) {
             });
 
             serializedType = options.type;
-            convertType = (serializedType != highlighter.converter.type);
-
-            if (convertType) {
-                serializationConverter = getConverter(serializedType);
-            }
-
+            
             serializedHighlights = ["type:" + serializedType];
 
             forEach(highlights, function(highlight) {
-                var characterRange = highlight.characterRange;
-                var containerElement;
-
-                // Convert to the current Highlighter's type, if different from the serialization type
-                if (convertType) {
-                    containerElement = highlight.getContainerElement();
-                    characterRange = serializationConverter.rangeToCharacterRange(
-                        highlighter.converter.characterRangeToRange(highlighter.doc, characterRange, containerElement),
-                        containerElement
-                    );
-                }
-
-                var parts = [
-                    characterRange.start,
-                    characterRange.end,
-                    highlight.id,
-                    highlight.classApplier.className,
-                    highlight.containerElementId
-                ];
-
-                if (options.serializeHighlightText) {
-                    parts.push(highlight.getText());
-                }
-                serializedHighlights.push( parts.join("$") );
+                serializedHighlights.push( highlight.serialize(highlighter, hoptions) );
             });
 
             return serializedHighlights.join("|");
