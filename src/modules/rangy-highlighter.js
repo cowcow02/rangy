@@ -549,7 +549,7 @@ rangy.createModule("Highlighter", ["ClassApplier"], function(api, module) {
             serializedHighlights = ["type:" + serializedType];
 
             forEach(highlights, function(highlight) {
-                serializedHighlights.push( highlight.serialize(highlighter, hoptions) );
+                serializedHighlights.push( highlight.serialize(highlighter, options) );
             });
 
             return serializedHighlights.join("|");
