@@ -255,6 +255,11 @@ rangy.createModule("Highlighter", ["ClassApplier"], function(api, module) {
                 this.characterRange.start + " - " + this.characterRange.end + ")]";
         },
         serialize: function (highlighter, options) {
+            options = createOptions(options, {
+                serializeHighlightText: false,
+                type: highlighter.converter.type
+            });
+
             var convertType, serializationConverter;
             var serializedType = options.type
             convertType = serializedType !== highlighter.converter.type;
