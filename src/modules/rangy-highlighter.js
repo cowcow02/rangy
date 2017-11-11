@@ -317,7 +317,7 @@ rangy.createModule("Highlighter", ["ClassApplier"], function(api, module) {
         getHighlightForElement: function(el) {
             var highlights = this.highlights;
             for (var i = 0, len = highlights.length; i < len; ++i) {
-                if (highlights[i].containsElement(el)) {
+                if (highlights[i].containsElement(el) && highlights[i].classApplier.className === el.className) {
                     return highlights[i];
                 }
             }
